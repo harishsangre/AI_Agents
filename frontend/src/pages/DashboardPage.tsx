@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import axios from '../lib/axios'
@@ -8,7 +8,7 @@ import Layout from '../components/Layout'
 import { Button } from '../components/ui/button'
 import { Card } from '../components/ui/card'
 import { Agent } from '../types'
-import { Plus, Trash2, Eye, MoreVertical, Bot, FileText, MessageSquare, BarChart3, Search, Filter } from 'lucide-react'
+import { Plus, Trash2, Eye, MoreVertical, Bot, FileText, MessageSquare, BarChart3, Search } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +26,7 @@ function DashboardPage() {
   const [filterStatus, setFilterStatus] = useState<string | null>(null)
 
   // Fetch dashboard stats
-  const { data: dashboardData, isLoading: statsLoading } = useQuery({
+  const { data: dashboardData } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
       const response = await axios.get('/dashboard/stats')
@@ -45,14 +45,14 @@ function DashboardPage() {
     staleTime: 30000,
   })
 
-  useState(() => {
+  useEffect(() => {
     if (agentsList) {
       setAgents(agentsList)
     }
-  }, [agentsList])
+  }, [agentsList, setAgents])
 
   const handleDeleteAgent = async (agentId: string) => {
-    if (window.confirm('Are you sure you want to delete this agent? This action cannot be undone.'))
+    if (window.confirm('Are you sure you want to delete this agent? This action cannot be undone.')) {
       try {
         await axios.delete(`/agents/${agentId}`)
         setAgents(agents.filter((a) => a.id !== agentId))
@@ -60,6 +60,7 @@ function DashboardPage() {
         console.error('Failed to delete agent:', error)
         alert('Failed to delete agent')
       }
+    }
   }
 
   const filteredAgents = agents.filter((agent) => {
